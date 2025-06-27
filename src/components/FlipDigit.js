@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './FlipDigit.css';
 
-const FlipDigit = ({ digit, isDarkMode = false }) => {
+const FlipDigit = ({ digit, isDarkMode = false, clockCount = 1 }) => {
   const [currentDigit, setCurrentDigit] = useState(digit);
   const [nextDigit, setNextDigit] = useState(digit);
   const [isFlipping, setIsFlipping] = useState(false);
@@ -20,8 +20,15 @@ const FlipDigit = ({ digit, isDarkMode = false }) => {
     }
   }, [digit, currentDigit]);
 
+  // Get size class based on clock count
+  const getSizeClass = () => {
+    if (clockCount === 1) return 'flip-digit-large';
+    if (clockCount <= 3) return 'flip-digit-medium';
+    return 'flip-digit-small';
+  };
+
   return (
-    <div className={`flip-digit dark`}>
+    <div className={`flip-digit ${isDarkMode ? 'dark' : ''} ${getSizeClass()}`}>
       <div className={`flip-card ${isFlipping ? 'flipping' : ''}`}>
         <div className="flip-card-front">
           <span>{currentDigit}</span>

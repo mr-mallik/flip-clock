@@ -9,6 +9,7 @@ export const saveClockData = (clocks, is24Hour, isDarkMode) => {
       isDarkMode,
       timestamp: Date.now()
     };
+    // console.log('Saving to localStorage:', data);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   } catch (error) {
     console.error('Error saving clock data:', error);
@@ -18,8 +19,11 @@ export const saveClockData = (clocks, is24Hour, isDarkMode) => {
 export const loadClockData = () => {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
+    // console.log('Raw localStorage data:', data);
     if (data) {
       const parsed = JSON.parse(data);
+    //   console.log('Parsed localStorage data:', parsed);
+      
       return {
         clocks: parsed.clocks || [],
         is24Hour: parsed.is24Hour !== undefined ? parsed.is24Hour : true,
@@ -31,6 +35,7 @@ export const loadClockData = () => {
   }
   
   // Return default data if no saved data or error
+  console.log('Returning default data');
   return {
     clocks: [],
     is24Hour: true,

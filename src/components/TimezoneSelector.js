@@ -83,32 +83,29 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
 
   return (
     <div className="relative">
-      <button
-        onClick={toggleDropdown}
-        className={`px-6 py-3 rounded-lg font-semibold transition-colors duration-200 flex items-center space-x-2 disabled:cursor-not-allowed ${
-          isDarkMode 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-600' 
-            : 'bg-blue-500 hover:bg-blue-600 text-white disabled:bg-gray-400'
-        }`}
-        disabled={loading || availableTimezones.length === 0}
-      >
-        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-        </svg>
-        <span>{loading ? 'Loading...' : 'Add Clock'}</span>
-      </button>
+        <button
+            onClick={toggleDropdown}
+            className={`text-sm disabled:cursor-not-allowed ${
+                isDarkMode 
+                ? 'text-white disabled:bg-gray-600' 
+                : 'text-gray-800 disabled:bg-gray-400'
+            }`}
+            disabled={loading || availableTimezones.length === 0}
+        >
+            <span>{loading ? 'Loading...' : 'Add Clock'}</span>
+        </button>
 
-      {error && (
-        <div className={`absolute top-full left-0 mt-2 w-64 border rounded-lg p-3 text-sm ${
-          isDarkMode 
-            ? 'bg-red-900 border-red-700 text-red-200' 
-            : 'bg-red-50 border-red-200 text-red-700'
-        }`}>
-          <p className="font-medium">Error loading timezones:</p>
-          <p>{error}</p>
-          <p className="mt-1 text-xs">Using fallback timezones.</p>
-        </div>
-      )}
+        {error && (
+            <div className={`absolute top-full left-0 mt-2 w-64 border rounded-lg p-3 text-sm ${
+                isDarkMode 
+                ? 'bg-red-900 border-red-700 text-red-200' 
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}>
+                <p className="font-medium">Error loading timezones:</p>
+                <p>{error}</p>
+                <p className="mt-1 text-xs">Using fallback timezones.</p>
+            </div>
+        )}
 
       {isOpen && !loading && availableTimezones.length > 0 && (
         <div className={`absolute top-full left-0 mt-2 w-80 rounded-lg shadow-lg border z-10 max-h-96 overflow-hidden ${
@@ -139,9 +136,9 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
 
             {/* Timezone list */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {availableTimezones.slice(0, 50).map((tz) => (
+              {availableTimezones.slice(0, 50).map((tz, idx) => (
                 <button
-                  key={tz.timezone}
+                  key={tz.timezone + idx}
                   onClick={() => handleAddClock(tz.timezone, tz.country)}
                   className={`w-full text-left px-3 py-2 rounded-md transition-colors duration-200 text-sm ${
                     isDarkMode 
