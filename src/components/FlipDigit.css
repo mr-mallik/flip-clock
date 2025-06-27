@@ -1,0 +1,95 @@
+.flip-digit {
+  perspective: 1000px;
+  width: 60px;
+  height: 80px;
+  margin: 0 2px;
+}
+
+.flip-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* .flip-card.flipping {
+  transform: rotateX(-180deg);
+} */
+
+.flip-card-front,
+.flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: white;
+  background: linear-gradient(135deg, #1f2937, #374151);
+  border: 2px solid #4b5563;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.flip-card-back {
+  transform: rotateX(180deg);
+  background: linear-gradient(135deg, #374151, #4b5563);
+}
+
+/* Dark mode styles */
+.flip-digit.dark .flip-card-front,
+.flip-digit.dark .flip-card-back {
+  background: linear-gradient(135deg, #111827, #1f2937);
+  border: 2px solid #374151;
+  color: #f3f4f6;
+}
+
+.flip-digit.dark .flip-card-back {
+  background: linear-gradient(135deg, #1f2937, #374151);
+}
+
+/* Light mode alternative for better contrast */
+.flip-digit:not(.dark) .flip-card-front,
+.flip-digit:not(.dark) .flip-card-back {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: 2px solid #1d4ed8;
+  color: white;
+}
+
+.flip-digit:not(.dark) .flip-card-back {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.flip-digit span {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .flip-digit {
+    width: 45px;
+    height: 60px;
+  }
+  
+  .flip-card-front span,
+  .flip-card-back span {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .flip-digit {
+    width: 35px;
+    height: 45px;
+  }
+  
+  .flip-card-front span,
+  .flip-card-back span {
+    font-size: 1.4rem;
+  }
+}
