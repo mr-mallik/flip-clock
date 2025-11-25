@@ -1,22 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './FlipDigit.css';
 
-const FlipDigit = ({ digit, isDarkMode = false, clockCount = 1 }) => {
+const FlipDigit = React.memo(({ digit, isDarkMode = false, clockCount = 1 }) => {
   const [currentDigit, setCurrentDigit] = useState(digit);
   const [nextDigit, setNextDigit] = useState(digit);
   const [isFlipping, setIsFlipping] = useState(false);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (digit !== currentDigit) {
       setNextDigit(digit);
       setIsFlipping(true);
-      
-      const timer = setTimeout(() => {
+
+      // Clear any existing timer to prevent race conditions
+      if (timerRef.current) clearTimeout(timerRef.current);
+
+      timerRef.current = setTimeout(() => {
         setCurrentDigit(digit);
         setIsFlipping(false);
-      }, 300);
+      }, 600); // Match CSS transition duration
 
-      return () => clearTimeout(timer);
+      return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+      };
     }
   }, [digit, currentDigit]);
 
@@ -29,16 +35,30 @@ const FlipDigit = ({ digit, isDarkMode = false, clockCount = 1 }) => {
 
   return (
     <div className={`flip-digit ${isDarkMode ? 'dark' : ''} ${getSizeClass()}`}>
-      <div className={`flip-card ${isFlipping ? 'flipping' : ''}`}>
-        <div className="flip-card-front">
+      {/* Static Top (Next Digit) - Visible when flipper goes down */}
+      <div className="digit-half top">
+        <span>{nextDigit}</span>
+      </div>
+
+      {/* Static Bottom (Current Digit) - Visible until covered by flipper */}
+      <div className="digit-half bottom">
+        <span>{currentDigit}</span>
+      </div>
+
+      {/* The Flipper */}
+      <div className={`flipper ${isFlipping ? 'flipping' : ''}`}>
+        {/* Front Face (Top Current) - Visible initially */}
+        <div className="flipper-face front">
           <span>{currentDigit}</span>
         </div>
-        <div className="flip-card-back">
+
+        {/* Back Face (Bottom Next) - Visible after flip */}
+        <div className="flipper-face back">
           <span>{nextDigit}</span>
         </div>
       </div>
     </div>
   );
-};
+});
 
 export default FlipDigit;

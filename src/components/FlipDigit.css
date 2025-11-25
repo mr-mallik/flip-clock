@@ -1,8 +1,12 @@
 .flip-digit {
+  position: relative;
   perspective: 1000px;
   width: 60px;
   height: 80px;
   margin: 0 2px;
+  border-radius: 6px;
+  background-color: #374151; /* Fallback/Background */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive flip digit sizes */
@@ -56,153 +60,169 @@
   }
 }
 
-.flip-card {
-  position: relative;
+/* Common styles for all halves */
+.digit-half,
+.flipper-face {
+  position: absolute;
+  left: 0;
   width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 0.3s ease-in-out;
+  height: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1f2937, #374151);
+  color: white;
+  display: flex;
+  justify-content: center;
+  /* Font styles */
+  font-weight: bold;
+  line-height: 0; /* Important for positioning */
 }
 
-/* .flip-card.flipping {
-  transform: rotateX(-180deg);
-} */
-
-.flip-card-front,
-.flip-card-back {
+.digit-half span,
+.flipper-face span {
   position: absolute;
+  left: 0;
   width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-  border-radius: 8px;
+  height: 200%; /* Double height because container is 50% */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: white;
-  background: linear-gradient(135deg, #1f2937, #374151);
-  border: 2px solid #4b5563;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* Responsive font sizes */
-.flip-digit-large .flip-card-front,
-.flip-digit-large .flip-card-back {
+/* Top halves */
+.digit-half.top,
+.flipper-face.front {
+  top: 0;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5); /* Divider line */
+}
+
+.digit-half.top span,
+.flipper-face.front span {
+  top: 0;
+}
+
+/* Bottom halves */
+.digit-half.bottom,
+.flipper-face.back {
+  bottom: 0;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.5); /* Divider line */
+}
+
+.digit-half.bottom span,
+.flipper-face.back span {
+  top: -100%; /* Shift up to show bottom half */
+}
+
+/* The Flipper Container */
+.flipper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  transform-style: preserve-3d;
+  transform-origin: bottom; /* Pivot at the bottom edge of the top half */
+  z-index: 10;
+}
+
+.flipper.flipping {
+  animation: flipDown 0.6s ease-in-out forwards;
+}
+
+/* Flipper Faces */
+.flipper-face {
+  height: 100%; /* 100% of the flipper (which is 50% of digit) */
+  backface-visibility: hidden;
+}
+
+.flipper-face.front {
+  z-index: 2;
+}
+
+.flipper-face.back {
+  z-index: 1;
+  transform: rotateX(180deg); /* Initially rotated to be on the back */
+}
+
+/* Animation */
+@keyframes flipDown {
+  0% {
+    transform: rotateX(0deg);
+  }
+  100% {
+    transform: rotateX(-180deg);
+  }
+}
+
+/* Font Sizes */
+.flip-digit-large .digit-half,
+.flip-digit-large .flipper-face {
   font-size: 3rem;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-large .flip-card-front,
-  .flip-digit-large .flip-card-back {
+  .flip-digit-large .digit-half,
+  .flip-digit-large .flipper-face {
     font-size: 4rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .flip-digit-large .flip-card-front,
-  .flip-digit-large .flip-card-back {
+  .flip-digit-large .digit-half,
+  .flip-digit-large .flipper-face {
     font-size: 5rem;
   }
 }
 
-.flip-digit-medium .flip-card-front,
-.flip-digit-medium .flip-card-back {
+.flip-digit-medium .digit-half,
+.flip-digit-medium .flipper-face {
   font-size: 2.75rem;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-medium .flip-card-front,
-  .flip-digit-medium .flip-card-back {
+  .flip-digit-medium .digit-half,
+  .flip-digit-medium .flipper-face {
     font-size: 3.5rem;
   }
 }
 
-.flip-digit-small .flip-card-front,
-.flip-digit-small .flip-card-back {
+.flip-digit-small .digit-half,
+.flip-digit-small .flipper-face {
   font-size: 2rem;
 }
 
 @media (min-width: 768px) {
-  .flip-digit-small .flip-card-front,
-  .flip-digit-small .flip-card-back {
+  .flip-digit-small .digit-half,
+  .flip-digit-small .flipper-face {
     font-size: 2.5rem;
   }
 }
 
-.flip-card-back {
-  transform: rotateX(180deg);
-  background: linear-gradient(135deg, #374151, #4b5563);
-}
-
-/* Dark mode styles */
-.flip-digit.dark .flip-card-front,
-.flip-digit.dark .flip-card-back {
+/* Dark Mode Overrides */
+.flip-digit.dark .digit-half,
+.flip-digit.dark .flipper-face {
   background: linear-gradient(135deg, #111827, #1f2937);
-  border: 2px solid #374151;
   color: #f3f4f6;
 }
 
-.flip-digit.dark .flip-card-back {
-  background: linear-gradient(135deg, #1f2937, #374151);
-}
-
-/* Light mode alternative for better contrast */
-.flip-digit:not(.dark) .flip-card-front,
-.flip-digit:not(.dark) .flip-card-back {
+/* Light Mode Overrides */
+.flip-digit:not(.dark) .digit-half,
+.flip-digit:not(.dark) .flipper-face {
   background: linear-gradient(135deg, #2563eb, #3b82f6);
-  border: 2px solid #1d4ed8;
   color: white;
 }
 
-.flip-digit:not(.dark) .flip-card-back {
+.flip-digit:not(.dark) .digit-half.bottom,
+.flip-digit:not(.dark) .flipper-face.back {
   background: linear-gradient(135deg, #3b82f6, #60a5fa);
 }
 
+/* Text Shadow */
 .flip-digit span {
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* Slider styles */
-.slider-light::-webkit-slider-thumb {
-  appearance: none;
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: #3b82f6;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.slider-light::-moz-range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: #3b82f6;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.slider-dark::-webkit-slider-thumb {
-  appearance: none;
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: #60a5fa;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.slider-dark::-moz-range-thumb {
-  height: 16px;
-  width: 16px;
-  border-radius: 50%;
-  background: #60a5fa;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Responsive adjustments */
@@ -212,8 +232,8 @@
     height: 60px;
   }
   
-  .flip-card-front span,
-  .flip-card-back span {
+  .flip-digit-large .digit-half,
+  .flip-digit-large .flipper-face {
     font-size: 1.8rem;
   }
 }
@@ -224,8 +244,8 @@
     height: 45px;
   }
   
-  .flip-card-front span,
-  .flip-card-back span {
+  .flip-digit-large .digit-half,
+  .flip-digit-large .flipper-face {
     font-size: 1.4rem;
   }
 }
