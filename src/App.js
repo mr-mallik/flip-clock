@@ -4,7 +4,7 @@ import Clock from './components/Clock';
 import TimezoneSelector from './components/TimezoneSelector';
 import { saveClockData, loadClockData } from './components/storage';
 
-import { TiRefresh, TiTime, TiTimes } from "react-icons/ti";
+import { TiRefresh, TiTime, TiTimes, TiInfoLarge } from "react-icons/ti";
 
 function App() {
   const [clocks, setClocks] = useState([]);
@@ -12,6 +12,16 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [timeOffset, setTimeOffset] = useState(0); // in minutes from current time
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Centralized timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Load saved data on component mount
   useEffect(() => {
@@ -55,16 +65,16 @@ function App() {
   const handleTimeAdjustment = (targetTimezone, newHour, newMinute) => {
     // Calculate the current time in the target timezone
     const now = new Date();
-    const currentTimeInTarget = new Date(now.toLocaleString("en-US", {timeZone: targetTimezone}));
-    
+    const currentTimeInTarget = new Date(now.toLocaleString("en-US", { timeZone: targetTimezone }));
+
     // Calculate the desired time
     const desiredTime = new Date(currentTimeInTarget);
     desiredTime.setHours(newHour, newMinute, 0, 0);
-    
+
     // Calculate the offset in minutes
     const offsetMs = desiredTime.getTime() - currentTimeInTarget.getTime();
     const offsetMinutes = Math.floor(offsetMs / (1000 * 60));
-    
+
     setTimeOffset(offsetMinutes);
   };
 
@@ -96,29 +106,26 @@ function App() {
   };
 
   return (
-    <div className={`h-screen transition-colors duration-300 flex flex-col ${
-      isDarkMode 
-        ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
+    <div className={`h-screen transition-colors duration-300 flex flex-col ${isDarkMode
+        ? 'bg-gradient-to-br from-gray-900 to-gray-800'
         : 'bg-gradient-to-br from-blue-50 to-indigo-100'
-    }`}>
-      <div className="container mx-auto px-2 h-full flex flex-col">
+      }`}>
+      <div className="container mx-auto px-2 h-full flex flex-col relative">
         {/* Header */}
         <header className="flex justify-between items-center py-2 mb-2 flex-shrink-0">
           <div className="flex items-center gap-4">
-            <h1 className={`text-lg font-bold mr-6 ${
-              isDarkMode ? 'text-white' : 'text-gray-800'
-            }`}>World Clock</h1>
+            <h1 className={`text-lg font-bold mr-6 ${isDarkMode ? 'text-white' : 'text-gray-800'
+              }`}>World Clock</h1>
             {timeOffset !== 0 && (
-              <div className={`text-sm px-3 py-1 rounded-full ${
-                isDarkMode 
-                  ? 'bg-blue-900 text-blue-200' 
+              <div className={`text-sm px-3 py-1 rounded-full ${isDarkMode
+                  ? 'bg-blue-900 text-blue-200'
                   : 'bg-blue-100 text-blue-800'
-              }`}>
+                }`}>
                 Time Adjusted: {timeOffset > 0 ? '+' : ''}{Math.floor(timeOffset / 60)}h {Math.abs(timeOffset % 60)}m
               </div>
             )}
-            <TimezoneSelector 
-              onAddClock={addClock} 
+            <TimezoneSelector
+              onAddClock={addClock}
               selectedTimezones={selectedTimezones}
               isDarkMode={isDarkMode}
             />
@@ -129,12 +136,12 @@ function App() {
             {timeOffset !== 0 && (
               <button
                 onClick={resetTime}
-                className={`duration-200 flex items-center text-sm ${
-                  isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
-                }`}
+                className={`duration-200 flex items-center text-sm ${isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'
+                  }`}
+                title="Reset time to current"
               >
                 <TiRefresh size={22} />
-                <span>Reset Time</span>
+                <span className="hidden sm:inline ml-1">Reset Time</span>
               </button>
             )}
 
@@ -142,9 +149,10 @@ function App() {
               <button
                 onClick={toggleTimeFormat}
                 className={`duration-200 flex items-center text-sm ${isDarkMode ? 'text-white' : 'text-gray-800'}`}
+                title="Toggle 12/24 hour format"
               >
                 <TiTime size={22} />
-                <span>{is24Hour ? '12 Hour' : '24 Hour'}</span>
+                <span className="hidden sm:inline ml-1">{is24Hour ? '12H' : '24H'}</span>
               </button>
             )}
 
@@ -152,15 +160,25 @@ function App() {
               <button
                 onClick={clearAllClocks}
                 className={`text-red-500 hover:text-red-600 text-sm transition-colors duration-200 flex items-center`}
+                title="Remove all clocks"
               >
                 <TiTimes size={22} />
-                <span>Clear All</span>
+                <span className="hidden sm:inline ml-1">Clear</span>
               </button>
             )}
 
             <button
+              onClick={() => setShowHelp(true)}
+              className={`duration-200 flex items-center text-sm ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'}`}
+              title="Help & Info"
+            >
+              <TiInfoLarge size={22} />
+            </button>
+
+            <button
               onClick={toggleTheme}
               className={`duration-200 flex items-center text-sm ${isDarkMode ? 'text-yellow-400' : 'text-gray-800'}`}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
               {isDarkMode ? (
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -191,6 +209,7 @@ function App() {
                   onTimeAdjust={(hour, minute) => handleTimeAdjustment(clock.timezone, hour, minute)}
                   onRemove={() => removeClock(clock.id)}
                   clockCount={clocks.length}
+                  currentTime={currentTime}
                 />
               ))}
             </div>
@@ -198,25 +217,79 @@ function App() {
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
                 <div className="text-6xl mb-4">🕐</div>
-                <h2 className={`text-2xl font-semibold mb-2 ${
-                  isDarkMode ? 'text-gray-200' : 'text-gray-700'
-                }`}>No Clocks Added Yet</h2>
-                <p className={`mb-6 ${
-                  isDarkMode ? 'text-gray-400' : 'text-gray-500'
-                }`}>Click "Add Clock" to get started with your world time collection</p>
+                <h2 className={`text-2xl font-semibold mb-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-700'
+                  }`}>No Clocks Added Yet</h2>
+                <p className={`mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+                  }`}>Click "Add Clock" to get started with your world time collection</p>
+                <button
+                  onClick={() => setShowHelp(true)}
+                  className={`text-sm underline ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}
+                >
+                  Need help?
+                </button>
               </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <footer className={`text-center text-xs py-4 flex-shrink-0 ${
-          isDarkMode ? 'text-gray-400' : 'text-gray-500'
-        }`}>
-          <p>Built with React & Tailwind CSS | Developed by <a target="_blank" rel="noreferrer" href='https://mrmallik.com' className={`${
-            isDarkMode ? 'hover:text-blue-400 hover:underline' : 'hover:text-blue-600 hover:underline'
-          } transition-colors`}>Gulger Mallik</a></p>
+        <footer className={`text-center text-xs py-4 flex-shrink-0 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+          }`}>
+          <p>Built with React & Tailwind CSS | Developed by <a target="_blank" rel="noreferrer" href='https://mrmallik.com' className={`${isDarkMode ? 'hover:text-blue-400 hover:underline' : 'hover:text-blue-600 hover:underline'
+            } transition-colors`}>Gulger Mallik</a></p>
         </footer>
+
+        {/* Help Modal */}
+        {showHelp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className={`relative w-full max-w-md rounded-2xl shadow-2xl p-6 ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
+              }`}>
+              <button
+                onClick={() => setShowHelp(false)}
+                className={`absolute top-4 right-4 p-1 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+                  }`}
+              >
+                <TiTimes size={24} />
+              </button>
+
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <TiInfoLarge className="text-blue-500" />
+                About World Flip Clock
+              </h2>
+
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">🌍 Multi-Timezone Tracking</h3>
+                  <p className="opacity-80">Add multiple clocks from different timezones to track time globally. Use the search bar to find any city or country.</p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">⚡ Time Travel</h3>
+                  <p className="opacity-80">Click "Adjust Time" on any clock to see what time it will be in other locations relative to your selection. Great for scheduling meetings!</p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">🌓 Day & Night</h3>
+                  <p className="opacity-80">Indicators show if it's currently day or night in each location. The interface adapts to your system preference or manual toggle.</p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">✨ Flip Animation</h3>
+                  <p className="opacity-80">Enjoy the satisfying retro flip clock animation as time passes.</p>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-center">
+                <button
+                  onClick={() => setShowHelp(false)}
+                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium transition-colors"
+                >
+                  Got it!
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

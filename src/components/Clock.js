@@ -1,34 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import FlipDigit from './FlipDigit';
 
-const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset = 0, onTimeAdjust, clockCount = 1 }) => {
-  const [time, setTime] = useState(new Date());
+const Clock = React.memo(({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset = 0, onTimeAdjust, clockCount = 1, currentTime }) => {
   const [showSlider, setShowSlider] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   // Get the adjusted time based on the offset
   const getAdjustedTime = () => {
-    const adjustedTime = new Date(time.getTime() + (timeOffset * 60 * 1000));
+    const adjustedTime = new Date(currentTime.getTime() + (timeOffset * 60 * 1000));
     return adjustedTime;
   };
 
   // Function to determine if it's day or night in the timezone
   const getDayNightStatus = () => {
     const adjustedTime = getAdjustedTime();
-    const localTime = adjustedTime.toLocaleString('en-US', { 
+    const localTime = adjustedTime.toLocaleString('en-US', {
       timeZone: timezone,
       hour12: false,
       hour: '2-digit'
     });
     const hour = parseInt(localTime.split(' ')[1]?.split(':')[0] || localTime.split(':')[0]);
-    
+
     // Consider 6 AM to 6 PM as day, 6 PM to 6 AM as night
     const isDay = hour >= 6 && hour < 18;
     return isDay;
@@ -43,9 +34,9 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
       minute: '2-digit',
       second: '2-digit'
     };
-    
+
     const timeString = adjustedTime.toLocaleTimeString('en-US', options);
-    
+
     if (is24Hour) {
       return timeString;
     } else {
@@ -59,8 +50,8 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
   };
 
   const getTimeDigits = () => {
-    const formatted = formatTime(time);
-    
+    const formatted = formatTime(currentTime);
+
     if (is24Hour) {
       // 24-hour format: HH:MM:SS
       const digits = formatted.replace(/:/g, '').split('');
@@ -84,7 +75,7 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
   // Get current time in this timezone for the slider
   const getCurrentTimeInTimezone = () => {
     const adjustedTime = getAdjustedTime();
-    const timeInTimezone = new Date(adjustedTime.toLocaleString("en-US", {timeZone: timezone}));
+    const timeInTimezone = new Date(adjustedTime.toLocaleString("en-US", { timeZone: timezone }));
     return {
       hours: timeInTimezone.getHours(),
       minutes: timeInTimezone.getMinutes()
@@ -157,23 +148,21 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
   const sizeClasses = getSizeClasses();
 
   return (
-    <div className={`rounded-lg shadow-lg relative w-full transition-colors duration-300 ${sizeClasses.container} ${sizeClasses.padding} ${
-      isDarkMode 
-        ? 'bg-gray-800 border border-gray-700' 
+    <div className={`rounded-lg shadow-lg relative w-full transition-colors duration-300 ${sizeClasses.container} ${sizeClasses.padding} ${isDarkMode
+        ? 'bg-gray-800 border border-gray-700'
         : 'bg-white'
-    }`}>
+      }`}>
       {/* Day/Night indicator and Remove button */}
       <div className="absolute top-2 left-2 right-2 flex justify-between items-center">
         {/* Day/Night indicator */}
-        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs ${
-          isDay 
-            ? isDarkMode 
-              ? 'bg-yellow-900 text-yellow-200' 
+        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs ${isDay
+            ? isDarkMode
+              ? 'bg-yellow-900 text-yellow-200'
               : 'bg-yellow-100 text-yellow-800'
-            : isDarkMode 
-              ? 'bg-blue-900 text-blue-200' 
+            : isDarkMode
+              ? 'bg-blue-900 text-blue-200'
               : 'bg-blue-100 text-blue-800'
-        }`}>
+          }`}>
           {isDay ? (
             <>
               <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -194,11 +183,10 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
         {/* Remove button */}
         <button
           onClick={onRemove}
-          className={`transition-colors duration-200 ${
-            isDarkMode 
-              ? 'text-gray-400 hover:text-red-400' 
+          className={`transition-colors duration-200 ${isDarkMode
+              ? 'text-gray-400 hover:text-red-400'
               : 'text-gray-400 hover:text-red-500'
-          }`}
+            }`}
           aria-label={`Remove ${country} clock`}
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -208,66 +196,60 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
       </div>
 
       {/* Country name */}
-      <h3 className={`font-semibold mb-4 text-center mt-6 ${sizeClasses.title} ${
-        isDarkMode ? 'text-white' : 'text-gray-800'
-      }`}>{country}</h3>
-      
+      <h3 className={`font-semibold mb-4 text-center mt-6 ${sizeClasses.title} ${isDarkMode ? 'text-white' : 'text-gray-800'
+        }`}>{country}</h3>
+
       {/* Clock display */}
       <div className="flex items-center justify-center space-x-1">
         {/* Hours */}
         <FlipDigit digit={digits.hours[0]} isDarkMode={isDarkMode} clockCount={clockCount} />
         <FlipDigit digit={digits.hours[1]} isDarkMode={isDarkMode} clockCount={clockCount} />
-        
+
         {/* Separator */}
-        <div className={`font-bold mx-2 ${clockCount === 1 ? 'text-4xl md:text-5xl lg:text-6xl' : clockCount <= 3 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'} ${
-          isDarkMode ? 'text-gray-300' : 'text-gray-600'
-        }`}>:</div>
-        
+        <div className={`font-bold mx-2 ${clockCount === 1 ? 'text-4xl md:text-5xl lg:text-6xl' : clockCount <= 3 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'} ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>:</div>
+
         {/* Minutes */}
         <FlipDigit digit={digits.minutes[0]} isDarkMode={isDarkMode} clockCount={clockCount} />
         <FlipDigit digit={digits.minutes[1]} isDarkMode={isDarkMode} clockCount={clockCount} />
-        
+
         {/* Separator */}
-        <div className={`font-bold mx-2 ${clockCount === 1 ? 'text-4xl md:text-5xl lg:text-6xl' : clockCount <= 3 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'} ${
-          isDarkMode ? 'text-gray-300' : 'text-gray-600'
-        }`}>:</div>
-        
+        <div className={`font-bold mx-2 ${clockCount === 1 ? 'text-4xl md:text-5xl lg:text-6xl' : clockCount <= 3 ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'} ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+          }`}>:</div>
+
         {/* Seconds */}
         <FlipDigit digit={digits.seconds[0]} isDarkMode={isDarkMode} clockCount={clockCount} />
         <FlipDigit digit={digits.seconds[1]} isDarkMode={isDarkMode} clockCount={clockCount} />
-        
+
         {/* AM/PM for 12-hour format */}
         {!is24Hour && digits.period && (
-          <div className={`ml-4 font-semibold ${clockCount === 1 ? 'text-2xl md:text-3xl lg:text-4xl' : clockCount <= 3 ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'} ${
-            isDarkMode ? 'text-gray-300' : 'text-gray-600'
-          }`}>
+          <div className={`ml-4 font-semibold ${clockCount === 1 ? 'text-2xl md:text-3xl lg:text-4xl' : clockCount <= 3 ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'} ${isDarkMode ? 'text-gray-300' : 'text-gray-600'
+            }`}>
             {digits.period}
           </div>
         )}
       </div>
-      
+
       {/* Time Slider */}
       <div className={sizeClasses.controls}>
         <div className="flex justify-between items-center mb-2">
           <button
             onClick={() => setShowSlider(!showSlider)}
-            className={`text-xs px-2 py-1 rounded transition-colors duration-200 ${
-              isDarkMode 
-                ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-700' 
+            className={`text-xs px-2 py-1 rounded transition-colors duration-200 ${isDarkMode
+                ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-700'
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-            }`}
+              }`}
           >
             {showSlider ? 'Hide' : 'Adjust'} Time
           </button>
           {timeOffset !== 0 && (
-            <div className={`text-xs ${
-              isDarkMode ? 'text-blue-400' : 'text-blue-600'
-            }`}>
+            <div className={`text-xs ${isDarkMode ? 'text-blue-400' : 'text-blue-600'
+              }`}>
               {timeOffset > 0 ? '+' : ''}{Math.floor(timeOffset / 60)}h {Math.abs(timeOffset % 60)}m
             </div>
           )}
         </div>
-        
+
         {showSlider && (
           <div className="space-y-2">
             <input
@@ -277,29 +259,26 @@ const Clock = ({ timezone, country, onRemove, is24Hour, isDarkMode, timeOffset =
               step="15"
               value={getSliderValue()}
               onChange={handleSliderChange}
-              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${
-                isDarkMode 
-                  ? 'bg-gray-700 slider-dark' 
+              className={`w-full h-2 rounded-lg appearance-none cursor-pointer ${isDarkMode
+                  ? 'bg-gray-700 slider-dark'
                   : 'bg-gray-200 slider-light'
-              }`}
+                }`}
             />
-            <div className={`text-center text-xs ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-500'
-            }`}>
+            <div className={`text-center text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+              }`}>
               {formatSliderTime(getSliderValue())}
             </div>
           </div>
         )}
       </div>
-      
+
       {/* Timezone info */}
-      <div className={`text-center mt-2 ${sizeClasses.timezone} ${
-        isDarkMode ? 'text-gray-400' : 'text-gray-500'
-      }`}>
+      <div className={`text-center mt-2 ${sizeClasses.timezone} ${isDarkMode ? 'text-gray-400' : 'text-gray-500'
+        }`}>
         {timezone}
       </div>
     </div>
   );
-};
+});
 
 export default Clock;
