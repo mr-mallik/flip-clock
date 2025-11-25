@@ -30,6 +30,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
             timezone: utcTimezone,
             offset: timezone.offset,
             text: timezone.text,
+            value: timezone.value,
+            abbr: timezone.abbr,
             region: utcTimezone.split('/')[0]
           }))
         ).sort((a, b) => a.country.localeCompare(b.country));
@@ -41,10 +43,10 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
         setError(err.message);
         // Fallback to a few basic timezones if API fails
         setTimezones([
-          { country: 'New York', timezone: 'America/New_York', offset: -5, region: 'America' },
-          { country: 'London', timezone: 'Europe/London', offset: 0, region: 'Europe' },
-          { country: 'Tokyo', timezone: 'Asia/Tokyo', offset: 9, region: 'Asia' },
-          { country: 'Sydney', timezone: 'Australia/Sydney', offset: 10, region: 'Australia' }
+          { country: 'New York', timezone: 'America/New_York', offset: -5, region: 'America', text: 'Eastern Standard Time', value: 'EST', abbr: 'EST' },
+          { country: 'London', timezone: 'Europe/London', offset: 0, region: 'Europe', text: 'Greenwich Mean Time', value: 'GMT', abbr: 'GMT' },
+          { country: 'Tokyo', timezone: 'Asia/Tokyo', offset: 9, region: 'Asia', text: 'Japan Standard Time', value: 'JST', abbr: 'JST' },
+          { country: 'Sydney', timezone: 'Australia/Sydney', offset: 10, region: 'Australia', text: 'Australian Eastern Standard Time', value: 'AEST', abbr: 'AEST' }
         ]);
       } finally {
         setLoading(false);
@@ -82,17 +84,26 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
     const parts = timezone.split('/');
     if (parts.length >= 2) {
       const location = parts[parts.length - 1].replace(/_/g, ' ');
-      // const region = parts[0];
       return location;
     }
     return timezone.replace(/_/g, ' ');
   };
 
   const availableTimezones = timezones.filter(
-    tz => !selectedTimezones.includes(tz.timezone) &&
-      (tz.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tz.timezone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        tz.region.toLowerCase().includes(searchTerm.toLowerCase()))
+    tz => {
+      if (!selectedTimezones.includes(tz.timezone)) {
+        const searchTermLower = searchTerm.toLowerCase();
+        return (
+          tz.country.toLowerCase().includes(searchTermLower) ||
+          tz.timezone.toLowerCase().includes(searchTermLower) ||
+          tz.region.toLowerCase().includes(searchTermLower) ||
+          (tz.text && tz.text.toLowerCase().includes(searchTermLower)) ||
+          (tz.value && tz.value.toLowerCase().includes(searchTermLower)) ||
+          (tz.abbr && tz.abbr.toLowerCase().includes(searchTermLower))
+        );
+      }
+      return false;
+    }
   );
 
   const handleAddClock = (timezone, country) => {
@@ -113,8 +124,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
       <button
         onClick={toggleDropdown}
         className={`flex items-center gap-2 px-4 py-2 rounded-full font-medium transition-all duration-200 shadow-sm ${isDarkMode
-            ? 'bg-blue-600 hover:bg-blue-500 text-white disabled:bg-gray-700 disabled:text-gray-500'
-            : 'bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 disabled:bg-gray-100 disabled:text-gray-400'
+          ? 'bg-blue-600 hover:bg-blue-500 text-white disabled:bg-gray-700 disabled:text-gray-500'
+          : 'bg-white hover:bg-gray-50 text-blue-600 border border-blue-100 disabled:bg-gray-100 disabled:text-gray-400'
           }`}
         disabled={loading}
       >
@@ -124,8 +135,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
 
       {error && (
         <div className={`absolute top-full left-0 mt-2 w-64 border rounded-lg p-3 text-sm z-20 shadow-xl ${isDarkMode
-            ? 'bg-red-900 border-red-700 text-red-200'
-            : 'bg-red-50 border-red-200 text-red-700'
+          ? 'bg-red-900 border-red-700 text-red-200'
+          : 'bg-red-50 border-red-200 text-red-700'
           }`}>
           <p className="font-medium">Error loading timezones:</p>
           <p>{error}</p>
@@ -135,8 +146,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
 
       {isOpen && !loading && (
         <div className={`absolute top-full left-0 mt-2 w-80 rounded-xl shadow-2xl border z-20 overflow-hidden flex flex-col max-h-[500px] ${isDarkMode
-            ? 'glass-dark text-white'
-            : 'glass text-gray-800'
+          ? 'glass-dark text-white'
+          : 'glass text-gray-800'
           }`}>
           <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider opacity-70">Select Timezone</h3>
@@ -146,12 +157,12 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
               <input
                 ref={inputRef}
                 type="text"
-                placeholder="Search city, country..."
+                placeholder="Search by city, country, IST, etc..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full px-4 py-2 pl-10 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode
-                    ? 'bg-gray-800/50 border border-gray-600 text-white placeholder-gray-400'
-                    : 'bg-white/80 border border-gray-300 text-gray-900 placeholder-gray-500'
+                  ? 'bg-gray-800/50 border border-gray-600 text-white placeholder-gray-400'
+                  : 'bg-white/80 border border-gray-300 text-gray-900 placeholder-gray-500'
                   }`}
               />
               <svg className={`absolute left-3 top-2.5 w-4 h-4 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,8 +180,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
                     key={tz.timezone + idx}
                     onClick={() => handleAddClock(tz.timezone, tz.country)}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors duration-200 group flex justify-between items-center ${isDarkMode
-                        ? 'hover:bg-blue-600/30'
-                        : 'hover:bg-blue-50'
+                      ? 'hover:bg-blue-600/30'
+                      : 'hover:bg-blue-50'
                       }`}
                   >
                     <div>
@@ -180,8 +191,8 @@ const TimezoneSelector = ({ onAddClock, selectedTimezones, isDarkMode }) => {
                         }`}>{tz.region}</div>
                     </div>
                     <div className={`text-xs px-2 py-1 rounded ${isDarkMode
-                        ? 'bg-gray-800 text-gray-300 group-hover:bg-blue-900 group-hover:text-blue-200'
-                        : 'bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700'
+                      ? 'bg-gray-800 text-gray-300 group-hover:bg-blue-900 group-hover:text-blue-200'
+                      : 'bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700'
                       }`}>
                       UTC{tz.offset >= 0 ? '+' : ''}{tz.offset}
                     </div>
